@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Fila Digital - Atendente</title>
+    <title>Painel de Atendimento</title>
     <style>
         body {
             font-family: 'Segoe UI', Arial, Verdana, sans-serif;
@@ -38,15 +38,26 @@
             color: #E91E63;
             border: 1px solid #E91E63;
         }
-        button {
-            background: #E91E63;
+        .btn-chamar {
+            background: #43a047;
             color: #fff;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background .2s;
         }
-        button:hover {
-            background: #ad1457;
+        .btn-chamar:hover {
+            background: #2e7d32;
+        }
+        .btn-encerrar {
+            background: #ffd600;
+            color: #E91E63;
+        }
+        .btn-encerrar:hover {
+            background: #ffe082;
+        }
+        .btn-cancelar {
+            background: #e53935;
+            color: #fff;
+        }
+        .btn-cancelar:hover {
+            background: #b71c1c;
         }
         table {
             width: 100%;
@@ -80,6 +91,29 @@
             font-size: 1em;
             color: #ad1457;
         }
+        .historico-container {
+            margin-top: 2em;
+            background: #fce4ec;
+            border-radius: 12px;
+            padding: 1.2em;
+            box-shadow: 0 2px 12px rgba(233,30,99,0.06);
+        }
+        .historico-titulo {
+            color: #E91E63;
+            font-weight: bold;
+            margin-bottom: .7em;
+            font-size: 1.1em;
+        }
+        .historico-lista {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .historico-item {
+            margin-bottom: 0.7em;
+            color: #ad1457;
+            font-size: 0.97em;
+        }
         @media (max-width: 700px) {
             .container {
                 max-width: 98vw;
@@ -98,7 +132,7 @@
     </style>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-        import { getFirestore, collection, query, orderBy, onSnapshot, doc, updateDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+        import { getFirestore, collection, query, orderBy, onSnapshot, doc, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
         const firebaseConfig = {
             apiKey: "AIzaSyALsWVVeElwPGkSHzRm7Vaw-LRDVBCwY3A",
             authDomain: "fila-atendimento-7b539.firebaseapp.com",
@@ -117,6 +151,8 @@
             const atendenteSelect = document.getElementById('atendenteSelect');
             const msgPainel = document.getElementById('msgPainel');
             const corpo = document.getElementById('corpoTabelaFila');
+            const historicoContainer = document.getElementById('historicoContainer');
+            const historicoLista = document.getElementById('historicoLista');
             const senhasRef = collection(db, "senhas");
             const filaQuery = query(senhasRef, orderBy('createdAt','asc'));
 
@@ -126,37 +162,64 @@
                 renderTabela();
             });
 
-            // Renderiza tabela apenas se atendente estiver selecionado
             function renderTabela() {
                 if (!atendenteSelecionado) {
                     corpo.innerHTML = "";
+                    historicoLista.innerHTML = "";
                     return;
                 }
                 onSnapshot(filaQuery, snapshot => {
                     corpo.innerHTML = '';
+                    let historicoGeral = [];
                     snapshot.forEach(docRef => {
                         const s = docRef.data();
+                        // Senha será CR001, CR002...
+                        const senha = s.senha ? s.senha.replace(/^PSI/, "CR") : "";
                         const linha = document.createElement('tr');
                         linha.innerHTML = `
-                            <td>${s.senha}</td>
+                            <td>${senha}</td>
                             <td>${s.nome}</td>
                             <td>${s.curso}</td>
                             <td>${s.solicitacao}</td>
                             <td>${s.status}</td>
                             <td>
-                                <button onclick="alterarStatus('${docRef.id}','chamado')">Chamar</button>
-                                <button onclick="alterarStatus('${docRef.id}','encerrado')">Encerrar</button>
-                                <button onclick="alterarStatus('${docRef.id}','cancelado')">Cancelar</button>
+                                <button class="btn-chamar" onclick="alterarStatus('${docRef.id}','chamado')">Chamar</button>
+                                <button class="btn-encerrar" onclick="alterarStatus('${docRef.id}','encerrado')">Encerrar</button>
+                                <button class="btn-cancelar" onclick="alterarStatus('${docRef.id}','cancelado')">Cancelar</button>
                             </td>
                         `;
                         corpo.appendChild(linha);
+
+                        // Monta histórico geral
+                        if (Array.isArray(s.historico)) {
+                            s.historico.forEach((item) => {
+                                historicoGeral.push(`${senha} - ${item}`);
+                            });
+                        }
                     });
+                    // Exibe histórico logo abaixo da tabela
+                    historicoLista.innerHTML = "";
+                    if (historicoGeral.length > 0) {
+                        historicoGeral.sort(); // opcional: ordena
+                        historicoGeral.forEach((item) => {
+                            const li = document.createElement('li');
+                            li.className = "historico-item";
+                            li.textContent = item;
+                            historicoLista.appendChild(li);
+                        });
+                    } else {
+                        historicoLista.innerHTML = "<li class='historico-item'>Nenhuma ação registrada ainda.</li>";
+                    }
                 });
             }
 
-            // Função global para alterar status
             window.alterarStatus = async (id, status) => {
-                await updateDoc(doc(db,"senhas",id), {status, atendente: atendenteSelecionado});
+                const historicoMsg = `${new Date().toLocaleString()} - ${atendenteSelecionado} marcou como ${status}`;
+                await updateDoc(doc(db,"senhas",id), {
+                    status,
+                    atendente: atendenteSelecionado,
+                    historico: arrayUnion(historicoMsg)
+                });
             };
         });
     </script>
@@ -187,6 +250,10 @@
             </thead>
             <tbody id="corpoTabelaFila"></tbody>
         </table>
+        <div class="historico-container" id="historicoContainer">
+            <div class="historico-titulo">Histórico de Atendimentos</div>
+            <ul class="historico-lista" id="historicoLista"></ul>
+        </div>
     </div>
 </body>
 </html>
