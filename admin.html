@@ -2,14 +2,13 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>Painel de Atendimento</title>
+  <title>Painel de Atendimento Interativo</title>
   <style>
     body {
-      font-family: 'Segoe UI', Arial, Verdana, sans-serif;
       margin: 0;
       padding: 0;
-      background: #f6f7fb;
-      color: #4b5e6b;
+      font-family: 'Segoe UI', Arial, Verdana, sans-serif;
+      background: linear-gradient(135deg, #e3ebf7 0%, #fdfcfb 100%);
     }
     .painel-container {
       display: flex;
@@ -17,83 +16,117 @@
       max-width: 1200px;
       margin: 2em auto;
       padding: 0 1em;
+      flex-wrap: wrap;
     }
     .panel-block {
       background: #fff;
-      border-radius: 24px;
-      box-shadow: 0 6px 32px rgba(76, 88, 114, 0.08);
-      padding: 2em 1.5em;
-      flex: 1 1 0;
+      border-radius: 20px;
+      box-shadow: 0 8px 32px rgba(76, 88, 114, 0.11);
+      padding: 2em 1.5em 2em 1.5em;
+      flex: 1 1 380px;
+      min-width: 340px;
       display: flex;
       flex-direction: column;
-      min-width: 350px;
+      position: relative;
     }
     .panel-title {
-      font-size: 1.5em;
-      color: #4b5e6b;
-      font-weight: 500;
-      margin: 0 0 .5em 0;
-      display: flex;
-      align-items: center;
-      gap: 12px;
+      font-size: 1.4em;
+      color: #425079;
+      font-weight: 600;
+      margin-bottom: 0.2em;
     }
     .panel-subtitle {
-      color: #888fa6;
-      font-size: 1em;
-      margin-bottom: 2em;
-    }
-    .panel-quantidade {
-      color: #888fa6;
+      color: #8ca3c1;
       font-size: 1em;
       font-weight: 400;
-      margin-left: auto;
+      margin-bottom: .9em;
+    }
+    .panel-quantidade {
+      color: #566595;
+      font-size: 1em;
+      font-weight: 500;
+      position: absolute;
+      top: 2em;
+      right: 1.7em;
+      background: #e3ebf7;
+      border-radius: 13px;
+      padding: .25em .8em;
     }
     .select-group {
       margin-bottom: 1em;
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
     }
     select, input[type="text"] {
-      width: 100%;
       padding: .6em 1em;
-      border-radius: 9px;
-      border: 1px solid #dde3f0;
+      border-radius: 10px;
+      border: 1px solid #e3ebf7;
       font-size: 1em;
-      margin-bottom: .8em;
       background: #f6f7fa;
-      color: #666;
-      box-sizing: border-box;
+      color: #5a6687;
+      transition: border-color 0.2s;
+    }
+    select:focus, input[type="text"]:focus {
+      border-color: #5a7fe6;
+      outline: none;
+    }
+    input[type="text"] {
+      flex: 1 1 170px;
+      min-width: 140px;
     }
     .panel-tme {
       font-size: 2em;
-      color: #4b5e6b;
-      font-weight: 400;
-      margin: 1.5em 0 1em 0;
+      color: #57759e;
+      font-weight: 500;
       text-align: center;
+      margin-bottom: 1.5em;
+      background: #e7ebf7;
+      padding: .6em 0;
+      border-radius: 14px;
+      letter-spacing: .5px;
     }
     .fila-vazia {
       text-align: center;
-      color: #8890a3;
-      font-size: 1.2em;
+      color: #7b899c;
+      font-size: 1.13em;
+      background: #eef2fb;
       padding: 2em 0;
-      background: #f6f7fa;
       border-radius: 12px;
+      font-style: italic;
+      margin-bottom: 1em;
+    }
+    .clientes-lista {
+      margin-top: .2em;
+      overflow-y: auto;
+      max-height: 450px;
+      min-height: 32px;
     }
     .cliente-card {
-      background: #f6f7fa;
-      border-radius: 12px;
-      padding: 1em 1em;
+      background: #eef2fb;
+      border-radius: 15px;
+      padding: 1em;
       display: flex;
       align-items: center;
-      margin-bottom: 8px;
-      gap: 15px;
+      margin-bottom: 10px;
+      gap: 17px;
+      box-shadow: 0 1px 9px rgba(97, 117, 158, 0.08);
+      transition: box-shadow 0.18s;
+    }
+    .cliente-card:hover {
+      box-shadow: 0 2px 20px #d1defb50;
+      background: #e6f1ff;
     }
     .cliente-foto {
-      width: 40px;
-      height: 40px;
-      background: #e7ebf7;
+      width: 38px;
+      height: 38px;
+      background: #dbe7fc;
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
+      color: #92a4c8;
+      font-size: 1.6em;
     }
     .cliente-info {
       flex-grow: 1;
@@ -101,87 +134,161 @@
       flex-direction: column;
     }
     .cliente-nome {
-      font-weight: 500;
+      font-weight: 600;
       color: #3b4760;
-      margin-bottom: 4px;
+      margin-bottom: 3px;
       font-size: 1.05em;
     }
     .cliente-detalhe {
       font-size: .97em;
-      color: #7a85a1;
+      color: #6b7ba2;
+      letter-spacing: .1px;
     }
     .cliente-horario {
       font-size: .92em;
-      color: #888fa6;
+      color: #8296bb;
       text-align: right;
       min-width: 120px;
-      font-weight: 400;
+      font-weight: 500;
     }
+    .badge {
+      margin-left: 8px;
+      font-size: .89em;
+      padding: 2px 7px;
+      border-radius: 11px;
+      color: #fff;
+      background: #92d8b8;
+    }
+    /* Mobile */
     @media (max-width: 900px) {
       .painel-container {
         flex-direction: column;
-        gap: 2em;
+        gap: 2.3em;
+      }
+      .panel-block {
+        min-width: 98vw;
+        margin: auto;
       }
     }
   </style>
 </head>
 <body>
 <div class="painel-container">
-  <!-- Clientes Esperando -->
+  <!-- Painel de Fila -->
   <div class="panel-block">
-    <div class="panel-title">Filas <span class="panel-subtitle">(Clientes Esperando)</span><span class="panel-quantidade">Quantidade: 0</span></div>
+    <div class="panel-title">Filas</div>
+    <div class="panel-subtitle">(Clientes Esperando)</div>
+    <span class="panel-quantidade" id="filaQtd">Quantidade: 0</span>
     <div class="select-group">
-      <select>
-          <option>MINHAS FILAS</option>
+      <select id="minhaFila">
+        <option>Todas as filas</option>
+        <option>Minha A</option>
+        <option>Minha B</option>
       </select>
-      <select>
-          <option>TODOS ATENDENTES</option>
+      <select id="todosAtendentes">
+        <option>Todos atendentes</option>
+        <option>Alisson</option>
+        <option>Robson</option>
+        <option>Dayanne</option>
+        <option>João</option>
+        <option>Elber</option>
       </select>
-      <input type="text" placeholder="Filtre aqui o cliente pelo nome...">
+      <input type="text" id="filtroFila" placeholder="Filtre cliente pelo nome...">
     </div>
-    <div class="panel-tme">TME: 2m 32s</div>
-    <div class="fila-vazia">Ninguém na fila!</div>
+    <div class="panel-tme" id="filaTME">TME: 2m 32s</div>
+    <div class="clientes-lista" id="filaClientes"></div>
   </div>
-  <!-- Clientes Chamados -->
+  <!-- Painel Chamados -->
   <div class="panel-block">
-    <div class="panel-title">Clientes Chamados Hoje <span class="panel-quantidade">Quantidade: 15</span></div>
+    <div class="panel-title">Clientes Chamados Hoje</div>
+    <span class="panel-quantidade" id="chamadosQtd">Quantidade: 15</span>
     <div class="select-group">
-      <select>
-          <option>MINHAS FILAS</option>
+      <select id="minhaChamados">
+        <option>Todas as filas</option>
+        <option>Minha A</option>
+        <option>Minha B</option>
       </select>
-      <select>
-          <option>TODOS ATENDENTES</option>
+      <select id="todosChamadosAtendentes">
+        <option>Todos atendentes</option>
+        <option>Alisson</option>
+        <option>Robson</option>
+        <option>Dayanne</option>
+        <option>João</option>
+        <option>Elber</option>
       </select>
-      <input type="text" placeholder="Filtre aqui o cliente pelo nome...">
+      <input type="text" id="filtroChamados" placeholder="Filtre cliente pelo nome...">
     </div>
-    <div class="panel-tme">TMA: 12m 47s</div>
-      <!-- Exemplo de cliente chamado -->
-      <div class="cliente-card">
-        <div class="cliente-foto"></div>
-        <div class="cliente-info">
-          <div class="cliente-nome">Ana Lucia Pereira Cortez</div>
-          <div class="cliente-detalhe">Senha: SA-18 - Mesa 4 Eloisa</div>
-        </div>
-        <div class="cliente-horario">24/11/2025, 17:33:25</div>
-      </div>
-      <div class="cliente-card">
-        <div class="cliente-foto"></div>
-        <div class="cliente-info">
-          <div class="cliente-nome">Anderson Luiz Calheiros Oliveira Junior</div>
-          <div class="cliente-detalhe">Senha: SA-17 - Mesa 4 Eloisa</div>
-        </div>
-        <div class="cliente-horario">24/11/2025, 16:48:50</div>
-      </div>
-      <div class="cliente-card">
-        <div class="cliente-foto"></div>
-        <div class="cliente-info">
-          <div class="cliente-nome">Camily Kaylane Pereira Pedrosa</div>
-          <div class="cliente-detalhe">Senha: SR-503</div>
-        </div>
-        <div class="cliente-horario">24/11/2025, 16:40:22</div>
-      </div>
-      <!-- Adicione outros clientes como acima -->
+    <div class="panel-tme" id="chamadosTMA">TMA: 12m 47s</div>
+    <div class="clientes-lista" id="chamadosClientes"></div>
   </div>
 </div>
+<script>
+  // Exemplo de dados (substitua pela integração Firebase real)
+  const clientesFila = [];
+  const clientesChamados = [
+    {
+      nome: 'Ana Lucia Pereira Cortez',
+      senha: 'SA-18',
+      mesa: 'Mesa 4 Eloisa',
+      horario: '24/11/2025, 17:33:25'
+    },
+    {
+      nome: 'Anderson Luiz Calheiros Oliveira Junior',
+      senha: 'SA-17',
+      mesa: 'Mesa 4 Eloisa',
+      horario: '24/11/2025, 16:48:50'
+    },
+    {
+      nome: 'Camily Kaylane Pereira Pedrosa',
+      senha: 'SR-503',
+      mesa: '',
+      horario: '24/11/2025, 16:40:22'
+    }
+    // Adicione mais objetos conforme necessário...
+  ];
+
+  function renderClientes(cont, data, filtro = '') {
+    cont.innerHTML = '';
+    let total = 0;
+    data.forEach(c => {
+      if (!filtro || c.nome.toLowerCase().includes(filtro.toLowerCase())) {
+        total++;
+        const div = document.createElement('div');
+        div.className = 'cliente-card';
+        div.innerHTML = `
+          <div class="cliente-foto">&#128100;</div>
+          <div class="cliente-info">
+            <div class="cliente-nome">${c.nome}</div>
+            <div class="cliente-detalhe">Senha: ${c.senha}${c.mesa ? ' - ' + c.mesa : ''}</div>
+          </div>
+          <div class="cliente-horario">${c.horario}</div>
+        `;
+        cont.appendChild(div);
+      }
+    });
+    if (total === 0) {
+      cont.innerHTML = '<div class="fila-vazia">Ninguém na fila!</div>';
+    }
+    return total;
+  }
+
+  // Fila dinâmica
+  function updateFila() {
+    const filtro = document.getElementById('filtroFila').value;
+    const qtd = renderClientes(document.getElementById('filaClientes'), clientesFila, filtro);
+    document.getElementById('filaQtd').textContent = `Quantidade: ${qtd}`;
+  }
+  document.getElementById('filtroFila').addEventListener('input', updateFila);
+  updateFila();
+
+  // Chamados dinâmicos
+  function updateChamados() {
+    const filtro = document.getElementById('filtroChamados').value;
+    const qtd = renderClientes(document.getElementById('chamadosClientes'), clientesChamados, filtro);
+    document.getElementById('chamadosQtd').textContent = `Quantidade: ${qtd}`;
+  }
+  document.getElementById('filtroChamados').addEventListener('input', updateChamados);
+  updateChamados();
+</script>
 </body>
 </html>
