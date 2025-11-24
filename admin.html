@@ -3,6 +3,99 @@
 <head>
     <meta charset="UTF-8">
     <title>Fila Digital - Atendente</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #E91E63 0%, #ffffff 100%);
+            color: #E91E63;
+        }
+        .container {
+            max-width: 600px;
+            margin: 3em auto;
+            background: #fff;
+            box-shadow: 0 8px 24px rgba(233,30,99,0.08);
+            border-radius: 16px;
+            padding: 2em;
+        }
+        h2 {
+            text-align: center;
+            color: #E91E63;
+            margin-bottom: 1.5em;
+        }
+        select, button {
+            width: 100%;
+            padding: 0.75em 1em;
+            border-radius: 8px;
+            border: none;
+            font-size: 1em;
+            margin-bottom: 1em;
+        }
+        select {
+            background: #fce4ec;
+            color: #E91E63;
+            border: 1px solid #E91E63;
+        }
+        button {
+            background: #E91E63;
+            color: #fff;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background .2s;
+        }
+        button:hover {
+            background: #ad1457;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #FFF;
+            margin-top: 1em;
+            border-radius: 16px;
+            overflow: hidden;
+        }
+        th, td {
+            padding: 0.6em 0.4em;
+            text-align: left;
+        }
+        th {
+            background-color: #E91E63;
+            color: #fff;
+            font-weight: bold;
+            border: none;
+        }
+        td {
+            border-bottom: 1px solid #f8bbd0;
+            color: #E91E63;
+        }
+        .atendente-label {
+            margin-bottom: 0.5em;
+            font-weight: bold;
+        }
+        #msgPainel {
+            text-align: center;
+            margin-bottom: 1em;
+            font-size: 1em;
+            color: #ad1457;
+        }
+        @media (max-width: 700px) {
+            .container {
+                max-width: 98vw;
+                padding: 1em;
+            }
+            h2 {
+                font-size: 1.2em;
+            }
+            th, td {
+                font-size: 0.95em;
+            }
+            select {
+                font-size: 1em;
+            }
+        }
+    </style>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
         import { getFirestore, collection, query, orderBy, onSnapshot, doc, updateDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
@@ -18,57 +111,82 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
+        let atendenteSelecionado = "";
+
         document.addEventListener('DOMContentLoaded', ()=>{
+            const atendenteSelect = document.getElementById('atendenteSelect');
+            const msgPainel = document.getElementById('msgPainel');
             const corpo = document.getElementById('corpoTabelaFila');
             const senhasRef = collection(db, "senhas");
             const filaQuery = query(senhasRef, orderBy('createdAt','asc'));
-            onSnapshot(filaQuery, snapshot => {
-                corpo.innerHTML = '';
-                snapshot.forEach(docRef => {
-                    const s = docRef.data();
-                    const linha = document.createElement('tr');
-                    linha.innerHTML = `
-                        <td>${s.senha}</td>
-                        <td>${s.nome}</td>
-                        <td>${s.curso}</td>
-                        <td>${s.solicitacao}</td>
-                        <td>${s.status}</td>
-                        <td>
-                            <button onclick="alterarStatus('${docRef.id}','chamado')">Chamar</button>
-                            <button onclick="alterarStatus('${docRef.id}','encerrado')">Encerrar</button>
-                            <button onclick="alterarStatus('${docRef.id}','cancelado')">Cancelar</button>
-                        </td>
-                    `;
-                    corpo.appendChild(linha);
-                });
+
+            atendenteSelect.addEventListener('change', ()=>{
+                atendenteSelecionado = atendenteSelect.value;
+                msgPainel.innerText = atendenteSelecionado ? `Você é atendente: ${atendenteSelecionado}` : "";
+                renderTabela();
             });
+
+            // Renderiza tabela apenas se atendente estiver selecionado
+            function renderTabela() {
+                if (!atendenteSelecionado) {
+                    corpo.innerHTML = "";
+                    return;
+                }
+                onSnapshot(filaQuery, snapshot => {
+                    corpo.innerHTML = '';
+                    snapshot.forEach(docRef => {
+                        const s = docRef.data();
+                        const linha = document.createElement('tr');
+                        linha.innerHTML = `
+                            <td>${s.senha}</td>
+                            <td>${s.nome}</td>
+                            <td>${s.curso}</td>
+                            <td>${s.solicitacao}</td>
+                            <td>${s.status}</td>
+                            <td>
+                                <button onclick="alterarStatus('${docRef.id}','chamado')">Chamar</button>
+                                <button onclick="alterarStatus('${docRef.id}','encerrado')">Encerrar</button>
+                                <button onclick="alterarStatus('${docRef.id}','cancelado')">Cancelar</button>
+                            </td>
+                        `;
+                        corpo.appendChild(linha);
+                    });
+                });
+            }
 
             // Função global para alterar status
             window.alterarStatus = async (id, status) => {
-                await updateDoc(doc(db,"senhas",id), {status});
+                await updateDoc(doc(db,"senhas",id), {status, atendente: atendenteSelecionado});
             };
         });
     </script>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 2em; }
-        table { border-collapse: collapse; width: 100%; margin-top: 2em;}
-        th, td { border: 1px solid #ccc; padding: 8px 12px; }
-    </style>
 </head>
 <body>
-    <h2>Fila de Atendimento (Atendente)</h2>
-    <table id="tabelaFila">
-        <thead>
-            <tr>
-                <th>Senha</th>
-                <th>Nome</th>
-                <th>Curso</th>
-                <th>Solicitação</th>
-                <th>Status</th>
-                <th>Ações</th>
-            </tr>
-        </thead>
-        <tbody id="corpoTabelaFila"></tbody>
-    </table>
+    <div class="container">
+        <h2>Painel de Atendimento</h2>
+        <label class="atendente-label">Selecione o atendente:</label>
+        <select id="atendenteSelect" required>
+            <option value="">-- Escolher atendente --</option>
+            <option>Alisson</option>
+            <option>Robson</option>
+            <option>Dayanne</option>
+            <option>João</option>
+            <option>Elber</option>
+        </select>
+        <div id="msgPainel"></div>
+        <table id="tabelaFila">
+            <thead>
+                <tr>
+                    <th>Senha</th>
+                    <th>Nome</th>
+                    <th>Curso</th>
+                    <th>Solicitação</th>
+                    <th>Status</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody id="corpoTabelaFila"></tbody>
+        </table>
+    </div>
 </body>
 </html>
