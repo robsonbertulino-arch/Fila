@@ -1,130 +1,48 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <title>Fila Digital - Aluno</title>
-    <style>
-        body {
-            font-family: 'Segoe UI', Arial, Verdana, sans-serif;
-            margin: 0;
-            padding: 0;
-            min-height: 100vh;
-            background: linear-gradient(135deg, #E91E63 0%, #ffffff 100%);
-            color: #E91E63;
-        }
-        .container {
-            max-width: 380px;
-            margin: 3em auto;
-            background: #fff;
-            box-shadow: 0 8px 24px rgba(233,30,99,0.08);
-            border-radius: 16px;
-            padding: 2em;
-        }
-        h2 {
-            text-align: center;
-            color: #E91E63;
-            margin-bottom: 1.5em;
-        }
-        form {
-            display: flex;
-            flex-direction: column;
-            gap: 1em;
-        }
-        input, button, select {
-            padding: 0.75em 1em;
-            border-radius: 8px;
-            border: none;
-            font-size: 1em;
-            margin-top: 4px;
-        }
-        input[type="text"], select {
-            background: #fce4ec;
-            color: #E91E63;
-            border: 1px solid #E91E63;
-        }
-        button {
-            background: #E91E63;
-            color: #fff;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background .2s;
-        }
-        button:hover {
-            background: #ad1457;
-        }
-        #msgSenha {
-            text-align: center;
-            margin-top: 1em;
-            font-size: 1.1em;
-            color: #E91E63;
-            background: #fce4ec;
-            padding: .7em;
-            border-radius: 8px;
-        }
-        @media (max-width: 600px) {
-            .container {
-                max-width: 98vw;
-                padding: 1em;
-            }
-            h2 {
-                font-size: 1.3em;
-            }
-            form {
-                gap: 0.7em;
-            }
-        }
-    </style>
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-        import { getFirestore, collection, query, orderBy, limit, getDocs, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
-        const firebaseConfig = {
-            apiKey: "AIzaSyALsWVVeElwPGkSHzRm7Vaw-LRDVBCwY3A",
-            authDomain: "fila-atendimento-7b539.firebaseapp.com",
-            projectId: "fila-atendimento-7b539",
-            storageBucket: "fila-atendimento-7b539.firebasestorage.app",
-            messagingSenderId: "377593193558",
-            appId: "1:377593193558:web:5417a6fca8c92087d187f7",
-            measurementId: "G-4DR1G5PZC8"
-        };
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+    import { getFirestore, collection, query, orderBy, limit, getDocs, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
-        document.addEventListener('DOMContentLoaded', ()=>{
-            document.getElementById('formSenha').addEventListener('submit', async function(e){
-                e.preventDefault();
-                const nome = document.getElementById('nome').value;
-                const curso = document.getElementById('curso').value;
-                const solicitacao = document.getElementById('solicitacao').value;
-                const senhasRef = collection(db, "senhas");
-                const q = query(senhasRef, orderBy('createdAt','desc'), limit(1));
-                const querySnapshot = await getDocs(q);
-                let numero = 1;
-                if (!querySnapshot.empty) {
-                    const ultima = querySnapshot.docs[0].data().senha;
-                    numero = parseInt(ultima.replace(/[^\d]/g,'')) + 1;
-                }
-                const senha = "PSI" + String(numero).padStart(3,'0');
-                await addDoc(senhasRef, {
-                    nome, curso, solicitacao, senha,
-                    status: 'aguardando',
-                    createdAt: serverTimestamp()
-                });
-                document.getElementById('msgSenha').innerText = `Sua senha: ${senha}. Aguarde ser chamado!`;
-                e.target.reset();
-            });
-        });
-    </script>
-</head>
-<body>
-    <div class="container">
-        <h2>Cadastro de Solicitação (Aluno)</h2>
-        <form id="formSenha">
-            <input type="text" id="nome" placeholder="Seu nome" required>
-            <input type="text" id="curso" placeholder="Curso" required>
-            <input type="text" id="solicitacao" placeholder="Solicitação" required>
-            <button type="submit">Pegar Senha</button>
-        </form>
-        <div id="msgSenha"></div>
-    </div>
-</body>
-</html>
+    const firebaseConfig = {
+        apiKey: "AIzaSyALsWVVeElwPGkSHzRm7Vaw-LRDVBCwY3A",
+        authDomain: "fila-atendimento-7b539.firebaseapp.com",
+        projectId: "fila-atendimento-7b539",
+        storageBucket: "fila-atendimento-7b539.firebasestorage.app",
+        messagingSenderId: "377593193558",
+        appId: "1:377593193558:web:5417a6fca8c92087d187f7",
+        measurementId: "G-4DR1G5PZC8"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    document.addEventListener('DOMContentLoaded', () => {
+        document.getElementById('formSenha').addEventListener('submit', async function(e){
+            e.preventDefault();
+
+            const nome = document.getElementById('nome').value;
+            const curso = document.getElementById('curso').value;
+            const solicitacao = document.getElementById('solicitacao').value;
+
+            // 🔥 AQUI ESTÁ A CORREÇÃO
+            const senhasRef = collection(db, "fila");
+
+            const q = query(senhasRef, orderBy('createdAt','desc'), limit(1));
+            const querySnapshot = await getDocs(q);
+
+            let numero = 1;
+            if (!querySnapshot.empty) {
+                const ultima = querySnapshot.docs[0].data().senha;
+                numero = parseInt(ultima.replace(/[^\d]/g,'')) + 1;
+            }
+
+            const senha = "PSI" + String(numero).padStart(3,'0');
+
+            await addDoc(senhasRef, {
+                nome,
+                curso,
+                solicitacao,
+                senha,
+                status: "aguardando",
+                atendente: "",
+                createdAt: serverTimestamp()
+            }
