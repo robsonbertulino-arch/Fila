@@ -1,78 +1,86 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Painel de Atendimento — Coordenação</title>
-  <link rel="stylesheet" href="css/atendente.css" />
+  <meta charset="UTF-8">
+  <title>Painel de Atendimento</title>
+  <link rel="stylesheet" href="atendente.css">
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
 </head>
+
 <body>
-  <header class="topbar">
-    <div class="brand">Coordenação — Painel de Atendimento</div>
-    <div class="controls">
-      <label>Atendente</label>
-      <select id="atendenteSelect">
-        <option value="">— Selecionar atendente —</option>
-        <option>Alisson</option><option>Robson</option><option>Dayanne</option><option>João</option><option>Elber</option>
-      </select>
-      <button id="btnLogout" class="btn small">Sair</button>
+
+<header class="header">
+  <h1>Coordenação — Painel de Atendimento</h1>
+
+  <div class="select-atendente-area">
+    <label>Atendente:</label>
+    <select id="selectAtendente">
+      <option value="">Selecionar atendente</option>
+      <option>Alisson</option>
+      <option>Robson</option>
+      <option>Dayanne</option>
+      <option>João</option>
+      <option>Elber</option>
+    </select>
+
+    <button id="logoutBtn" class="btn-sair">Sair</button>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- Fila Geral -->
+  <section class="card">
+    <h2>Fila Geral</h2>
+    <p class="descricao">Alunos aguardando atendimento (visível a todos)</p>
+
+    <div class="filtros">
+      <input id="buscarFila" type="text" placeholder="Pesquisar nome ou senha...">
     </div>
-  </header>
 
-  <main class="grid">
-    <!-- Coluna 1: fila geral -->
-    <section class="card">
-      <h2>Fila Geral</h2>
-      <p class="muted">Alunos aguardando atendimento (visível a todos)</p>
-      <div class="meta">
-        <div id="filaQtd" class="badge">0</div>
-        <div class="search"><input id="searchFila" placeholder="Pesquisar nome ou senha..."></div>
-      </div>
-      <div id="filaList" class="list"></div>
-    </section>
+    <div class="contador" id="filaCount">0 alunos</div>
 
-    <!-- Coluna 2: painel do atendente -->
-    <section class="card highlight">
-      <h2>Painel do Atendente</h2>
-      <p class="muted">Mostra somente os alunos do atendente selecionado</p>
+    <div class="lista" id="filaGeralLista"></div>
+  </section>
 
-      <div class="att-info">
-        <div>Atendente: <strong id="attNome">—</strong></div>
-        <div class="small-muted">Status: <span id="attStatus">Offline</span></div>
-      </div>
+  <!-- Painel do Atendente -->
+  <section class="card right">
+    <h2>Painel do Atendente</h2>
+    <p class="descricao">Mostra somente os alunos do atendente selecionado</p>
 
-      <div class="att-actions">
-        <button id="btnVerMinhaFila" class="btn">Ver minha fila</button>
-        <button id="btnVoltarGeral" class="btn ghost">Voltar</button>
-      </div>
+    <div class="info-atendente">
+      <div><strong>Atendente:</strong> <span id="nomeAtendente">—</span></div>
+      <div><strong>Status:</strong> <span id="statusAtendente" class="status offline">Offline</span></div>
+    </div>
 
-      <h3>Em Atendimento</h3>
-      <div id="atendimentoList" class="list small"></div>
+    <div class="btn-area">
+      <button class="btn" id="btnMinhaFila">Ver minha fila</button>
+      <button class="btn btn-secondary" id="btnVoltar">Voltar</button>
+    </div>
 
-      <h3>Minha Fila</h3>
-      <div id="minhaFilaList" class="list"></div>
+    <h3>Em Atendimento</h3>
+    <div class="lista" id="atendimentoAtual"></div>
 
-      <div class="history-note">
-        Ao finalizar um atendimento, o registro vai para o Histórico (visível à direita).
-      </div>
-    </section>
+    <h3>Minha Fila</h3>
+    <div class="lista" id="filaDoAtendente"></div>
+  </section>
 
-    <!-- Coluna 3: histórico -->
-    <section class="card">
-      <h2>Histórico (Últimos atendimentos)</h2>
-      <p class="muted">Nomes aparecem quando o atendente encerra o atendimento</p>
-      <div class="meta">
-        <div id="histQtd" class="badge">0</div>
-      </div>
-      <div id="historyList" class="list"></div>
+  <!-- Histórico -->
+  <section class="card bottom">
+    <h2>Histórico (Últimos atendimentos)</h2>
+    <p class="descricao">Nomes aparecem quando o atendente encerra o atendimento</p>
 
-      <div class="download">
-        <a href="/mnt/data/historico_21110110 (1).pdf" target="_blank" class="link">Download do histórico enviado</a>
-      </div>
-    </section>
-  </main>
+    <div class="contador" id="historicoCount">0 registros</div>
 
-  <!-- Firebase + app JS -->
-  <script type="module" src="js/atendente.js"></script>
+    <div class="lista" id="historicoLista"></div>
+
+    <a id="downloadHistorico" href="#" class="link-download">📄 Download do histórico enviado</a>
+  </section>
+
+</div>
+
+<script src="atendente.js"></script>
 </body>
 </html>
